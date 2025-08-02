@@ -1,7 +1,7 @@
 using System.Text.Json;
 
 public static class SetsAndMaps
-{
+{ // Problem 1 - Symmetric Pairs
     /// <summary>
     /// The words parameter contains a list of two character 
     /// words (lower case, no duplicates). Using sets, find an O(n) 
@@ -22,9 +22,27 @@ public static class SetsAndMaps
     public static string[] FindPairs(string[] words)
     {
         // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
-    }
+        var wordSet = new HashSet<string>(words);
+        var seen = new HashSet<string>();
+        var result = new List<string>();
 
+        foreach (var word in words)
+        {
+            if (word[0] == word[1]) continue;
+
+            var reversed = new string(new[] { word[1], word[0] });
+            if (wordSet.Contains(reversed) && !seen.Contains(reversed))
+            {
+                result.Add($"{word} & {reversed}");
+                seen.Add(word);
+                seen.Add(reversed);
+            }
+        }
+
+        return result.ToArray();
+    
+    }
+    // Problem 2 - Summarize Degrees
     /// <summary>
     /// Read a census file and summarize the degrees (education)
     /// earned by those contained in the file.  The summary
@@ -43,6 +61,14 @@ public static class SetsAndMaps
         {
             var fields = line.Split(",");
             // TODO Problem 2 - ADD YOUR CODE HERE
+            if (fields.Length >= 4)
+            {
+                var degree = fields[3].Trim();
+                if (degrees.ContainsKey(degree))
+                    degrees[degree]++;
+                else
+                    degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -67,7 +93,28 @@ public static class SetsAndMaps
     public static bool IsAnagram(string word1, string word2)
     {
         // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        var clean1 = word1.Replace(" ", "").ToLower();
+        var clean2 = word2.Replace(" ", "").ToLower();
+
+        if (clean1.Length != clean2.Length) return false;
+
+        var dict1 = new Dictionary<char, int>();
+        var dict2 = new Dictionary<char, int>();
+
+        foreach (char c in clean1)
+        {
+            if (!dict1.ContainsKey(c)) dict1[c] = 0;
+            dict1[c]++;
+        }
+
+        foreach (char c in clean2)
+        {
+            if (!dict2.ContainsKey(c)) dict2[c] = 0;
+            dict2[c]++;
+        }
+
+        return dict1.OrderBy(k => k.Key).SequenceEqual(dict2.OrderBy(k => k.Key));
+    
     }
 
     /// <summary>
@@ -95,12 +142,28 @@ public static class SetsAndMaps
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
+        var result = new List<string>();
 
+        if (featureCollection?.features != null)
+        {
+            foreach (var feature in featureCollection.features)
+            {
+                if (feature?.properties != null)
+                {
+                    var place = feature.properties.place;
+                    var mag = feature.properties.mag;
+                    if (place != null)
+                        result.Add($"{place} - Mag {mag}");
+                }
+            }
+        }
+
+        return result.ToArray();
         // TODO Problem 5:
         // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
         // on those classes so that the call to Deserialize above works properly.
         // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
         // 3. Return an array of these string descriptions.
-        return [];
+        
     }
 }
